@@ -98,7 +98,7 @@ function App() {
         </form>
       </div>
 
-      <div className="spacer">
+      <div className="spacer flex justify-center">
         <h3> All clients list here</h3>
 
         <table>
@@ -113,8 +113,8 @@ function App() {
             {clients.map((client) => (
               <tr key={client._id}>
                 <td>{client.name}</td>
-                <td>{client.phone}</td>
                 <td>{client.address}</td>
+                <td>{client.phone}</td>
               </tr>
             ))}
           </tbody>
