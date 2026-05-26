@@ -36,6 +36,16 @@ function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      await fetch("/deleteClient", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ _id: id }),
+      });
+      setClients(clients.filter((c) => c._id !== id));
+    } catch (error) {}
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus("loading");
@@ -107,6 +117,7 @@ function App() {
               <th>Name</th>
               <th>Address</th>
               <th>Number</th>
+              <th>edit: </th>
             </tr>
           </thead>
           <tbody>
@@ -115,6 +126,16 @@ function App() {
                 <td>{client.name}</td>
                 <td>{client.address}</td>
                 <td>{client.phone}</td>
+                <td>
+                  {" "}
+                  <button
+                    onClick={() => {
+                      handleDelete(client._id);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

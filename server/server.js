@@ -1,8 +1,7 @@
 import express from "express";
 import { fileURLToPath } from "url";
 import path from "path";
-
-import mongoose from "mongoose";
+import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,23 +11,10 @@ const app = express();
 
 app.use(express.json());
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("connecect to DB"))
-  .catch((err) => {
-    console.error("mongo db error", err);
-  });
-
-const clientSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    phone: { type: String, required: true },
-    address: { type: String, required: true },
-  },
-  { timestamps: true },
-);
-
-const Client = mongoose.model("Client", clientSchema);
+const client = new MongoClient(process.env.MONGODB_URI);
+await client.connect();
+const db = client.db("casas");
+const clients = db.collection("clients");
 
 app.use(express.static(path.join(__dirname, "../dist")));
 
@@ -38,9 +24,8 @@ app.get("/", (req, res) => {
 
 app.post("/api/clients", async (req, res) => {
   try {
-    const client = new Client(req.body);
-    await client.save();
-    res.status(201).json(client);
+    const result = await clients.insertOne(req.body);
+    res.status(201).json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -48,10 +33,19 @@ app.post("/api/clients", async (req, res) => {
 
 app.get("/api/clients", async (req, res) => {
   try {
-    const clients = await Client.find();
-    res.json(clients);
+    const allClients = await clients.find().toArray();
+    res.json(allClients);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/deleteClient", async (req, res) => {
+  try {
+    const result = await clients.deleteOne({ _id: new ObjectId(req.body._id) });
+    res.status(201).json(result);
+  } catch (err) {
+    console.error(err);
   }
 });
 
